@@ -94,11 +94,11 @@ _json2db_syntaxcheck(
 #include <errno.h>
 
 #define _TEMPL_FUNC \
-        "CREATE OR REPLACE FUNCTION siblog(tabname TEXT, received_at TIMESTAMPTZ, payload JSONB) "\
+        "CREATE OR REPLACE FUNCTION json2db(tabname TEXT, received_at TIMESTAMPTZ, payload JSONB) "\
         "RETURNS VOID AS $$ "\
         "DECLARE "\
         "        key_name TEXT; "\
-        "        key_value JSONB; "\
+        "        key_value JSONB; "\)
         "        col_type TEXT; "\
         "        col_names TEXT; "\
         "BEGIN "\
@@ -127,7 +127,7 @@ _json2db_syntaxcheck(
         "$$ LANGUAGE plpgsql; "\
 
 #define _TEMPL_CALL \
-        "SELECT siblog($1::text, $2::timestamptz, $3::jsonb);"
+        "SELECT json2db($1::text, $2::timestamptz, $3::jsonb);"
 
 #define _TEMPL_CLEAR \
         "TRUNCATE TABLE %s RESTART IDENTITY"
