@@ -141,6 +141,7 @@ json2db_init(
         const char *user,
         const char *pswd
 ) {
+        int err = 0;
         if (!ctx || !host || !port || !dbnm || !user || !pswd) {
                 return -EINVAL;
         }
@@ -148,7 +149,16 @@ json2db_init(
         if (CONNECTION_OK != PQstatus(ctx->conn)) {
                 return -ECONNREFUSED;
         }
-        return 0;
+        PGresult *res = PQexec(ctx->conn, "SET client_min_messages TO WARNING");
+        if (PGRES_COMMAND_OK != PQresultStatus(res)) {
+                err = -EIO;
+                goto cleanup;
+        }
+cleanup:
+        if (res) {
+                PQclear(res);
+        }
+        return err;
 }
 
 int 
@@ -172,17 +182,20 @@ int
 json2db_new(
         struct pgctx *ctx
 ) {
+        int err = 0;
         if (!ctx) {
                 return -EINVAL;
         }
         PGresult *res = PQexec(ctx->conn, _TEMPL_FUNC);
         if (PGRES_COMMAND_OK != PQresultStatus(res)) {
-                return -EIO;
+                err = -EIO;
+                goto cleanup;
         }
+cleanup:
         if (res) {
                 PQclear(res);
         }
-        return 0;
+        return err;
 }
 
 int 
@@ -190,6 +203,7 @@ json2db_clean(
         struct pgctx *ctx,
         const char   *tabname
 ) {
+        int err = 0;
         if (!ctx || !tabname) {
                 return -EINVAL;
         } 
@@ -202,13 +216,14 @@ json2db_clean(
         PQfreemem(tab);
         PGresult *res = PQexec(ctx->conn, query);
         if (PGRES_COMMAND_OK != PQresultStatus(res)) {
-                if (res) {
-                        PQclear(res);
-                }
-                return -EIO;
+                err = -EIO;
+                goto cleanup;
         }
-        PQclear(res);
-        return 0;
+cleanup:
+        if (res) {
+                PQclear(res);
+        }
+        return err;
 }
 
 int
@@ -218,6 +233,7 @@ json2db_add(
         const char   *timestamp,
         const char   *json
 ) {
+        int err = 0;
         if (!ctx || !tabname || !timestamp || !json || !_json2db_syntaxcheck(json)) {
                 return -EINVAL;
         } 
@@ -232,12 +248,14 @@ json2db_add(
                 0
         );
         if (PGRES_TUPLES_OK != PQresultStatus(res) && PGRES_COMMAND_OK != PQresultStatus(res)) {
-                return -EIO;
+                err = -EIO;
+                goto cleanup;
         }
+cleanup:
         if (res) {
                 PQclear(res);
         }
-        return 0;
+        return err;
 }
 
 int 
