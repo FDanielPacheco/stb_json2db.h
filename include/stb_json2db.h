@@ -98,7 +98,7 @@ _json2db_syntaxcheck(
         "RETURNS VOID AS $$ "\
         "DECLARE "\
         "        key_name TEXT; "\
-        "        key_value JSONB; "\)
+        "        key_value JSONB; "\
         "        col_type TEXT; "\
         "        col_names TEXT; "\
         "BEGIN "\
